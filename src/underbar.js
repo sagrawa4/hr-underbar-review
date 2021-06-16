@@ -107,24 +107,39 @@
     //Create an empty result array
     var result = [];
     var iteratedValues = [];
+
     //Check the type of iterator
-    /*console.log("function " , typeof iterator);
+    //console.log("function " , typeof iterator);
+    /*if (typeof iterator === 'function') {
+      _.each(array, function(item) {
+        if (!(result.includes(item))) {
+          result.push(item);
+        } else {
+          if (!iteratedValues.includes(iterator(item))) {
+            iteratedValues.push(iterator(item));
+            result.push(item);
+          }
+        }
+      });
+    }*/
+
+
     if (typeof iterator !== 'function') {
       _.each(array, function(item) {
-        if (! result.includes(item)) {
+        if (!result.includes(item)) {
           result.push(item);
         }
       });
     } else {
-      console.log(iteratedValues);
       _.each(array, function(item) {
-        iteratedValues.push(iterator(item));
+        if (!iteratedValues.includes(iterator(item))) {
+          iteratedValues.push(iterator(item));
+          result.push(item);
+        }
       });
-
-      console.log(iteratedValues);
     }
 
-    return result;*/
+    return result;
   };
 
 
@@ -184,7 +199,7 @@
       collection = collection.slice(1);
     }
     _.each(collection, function (item) {
-      accumulator = iterator(accumulator, item)
+      accumulator = iterator(accumulator, item);
     });
     return accumulator;
   };
@@ -204,13 +219,48 @@
 
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
-    // TIP: Try re-using reduce() here.
+
+    if (iterator === undefined) {
+      iterator = _.identity;
+    }
+    return _.reduce(collection, function(wasFound, item) {
+      if (wasFound) {
+        var iteratedValue = iterator(item);
+        if (!iteratedValue) {
+          return false;
+        } else {
+          return true;
+        }
+      } else {
+        return false;
+      }
+
+    }, true);
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
+    if (iterator === undefined) {
+      iterator = _.identity;
+    }
+    //var result = true;
+
+    // _.each(collection, function (item) {
+    //   var currentIteration = iterator(item);
+    //   if (currentIteration) {
+    //     return result;
+    //   } else {
+    //     result = false;
+    //     return result;
+    //   }
+    // });
+
+    return !!_.reduce(collection, function(sofarfalse, item) {
+      return sofarfalse || item;
+    }, false);
+
   };
 
 
@@ -233,11 +283,25 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    _.each(arguments, function(source) {
+      _.each(source, function(value, key) {
+        obj[key] = value;
+      });
+    });
+    return obj;
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    _.each(arguments, function(source) {
+      _.each(source, function(value, key) {
+        if ( obj[key] === undefined) {
+          obj[key] = value;
+        }
+      });
+    });
+    return obj;
   };
 
 
@@ -281,6 +345,20 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    var resultObj = {};
+
+    return function () {
+      var key = JSON.stringify(arguments);
+      if (key in resultObj) {
+        return resultObj[key];
+      } else {
+        var value = func.apply(this, arguments);
+        resultObj[key] = value;
+      }
+      return value;
+    };
+
+
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -290,6 +368,7 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+    return setTimeout.apply(this, arguments);
   };
 
 
@@ -304,6 +383,28 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+    var result = array.slice();
+
+    /*_.each(array, function (item) {
+      result.push(item);
+    });
+    _.each(result, function (item) {
+      var randomize = Math.floor(Math.random() * result.length);
+      var currentIndex = item;
+      currentIndex = item[randomize];
+      item[randomize] = currentIndex;
+    });*/
+
+    for (var i = 0; i < 5; i++) {
+      var randomize1 = Math.floor(Math.random() * ((result.length - 1) - 0) + 0);
+
+      var randomize2 = Math.floor(Math.random() * ((result.length - 1) - 0) + 0);
+
+      var temp = result[randomize1];
+      result[randomize1] = result[randomize2];
+      result[randomize2] = temp;
+    }
+    return result;
   };
 
 
